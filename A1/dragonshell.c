@@ -1,8 +1,6 @@
 #include <stddef.h>
 #include <string.h>
 
-#include <readline/readline.h> 
-
 #include <stdio.h>
 
 /**
@@ -22,30 +20,9 @@ void tokenize(char* str, const char* delim, char ** argv) {
   }
 }
 
-void welcome(void) {
-  printf("**********************************************");
-  printf("**********Welcome to the Dragonshell**********");
-  printf("**********************************************");
-}
+void welcome(void);
 
-void cmdLoop(void) {
-  int running;
-  do {
-    readInput();
-  } while(running);
-}
-
-int readInput() {
-  char* input;
-
-  input = readline("\ndragonshell>> "); // get input
-
-  if (strlen(input) != 0) { // if input is not empty
-    return 0;
-  } else {
-    return 1;
-  }
-}
+int readInput();
 
 int main(int argc, char **argv) {
   // print the string prompt without a newline, before beginning to read
@@ -54,7 +31,27 @@ int main(int argc, char **argv) {
 
   welcome();
 
-  cmdLoop();
+  while (1) {
+    readInput();
+  }
 
   return 0;
 }
+
+void welcome(void) {
+  printf("\n**********************************************\n");
+  printf("**********Welcome to the Dragonshell**********\n");
+  printf("**********************************************\n\n");
+}
+
+int readInput(void) {
+  char input;
+  printf("\ndragonshell>> ");
+  scanf("%s", &input); // get input
+  if (strlen(&input) != 0) { // if input is not empty
+    return 0;
+  } else {
+    return 1;
+  }
+}
+
