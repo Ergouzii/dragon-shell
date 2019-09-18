@@ -3,6 +3,29 @@
 
 #include <stdio.h>
 
+const char *DRAGON_IMAGE = "...........................................\n\
+........=..................................\n\
+.........=#-.......-:*==+..................\n\
+...........=W=-..........+W#-..............\n\
+.............-=WW=:.......:WWW:............\n\
+.................:#WWWW@@WWWWWW@-..........\n\
+...............+#WWWWWWWWWW@--=WW@-........\n\
+....*@#=#WWWWWWWWWWWWWWWWWWWWWW@WW*........\n\
+........:@WWWWWWWWWWWWWWWWWWWWWWWWWW@*-....\n\
+......-@WWWWWWWWWWWWWWWWWW*@WWWWWWWWWWW=#+.\n\
+..-=WWWWWWWWWWWWWW@+.:WW=:W+.*:.#@:#W#@WWW@\n\
+-#-.+WWWWWWWWWWWW+....:WW*.:@:...+..-*.+#*W\n\
+-...@WWWWWWWWWWW*......*WW@+.:@-..........+\n\
+...-WWWWWWWWWWWW:.......+WW=...-=#:........\n\
+..:WWWWWWWWWWWWW@.........:@W*--...-:*=::..\n\
+.:#.=WWWWWWWWWWWWW:..........-++:..........\n\
+.+..-WWWWWWWWWWWWWWW@+.....................\n\
+.....#WWWWWWWWWWWWWWWWWW#:.................\n\
+....#=-@WWWWWWWWWWWWWWWWWWW@:..............\n\
+...-*...#WWWWWWWWWWWWWWWWWWWWW:............\n\
+...--....*WWWWWWWWWWWWWWWWWWWWW*...........\n\
+..........*WWWWWWWWWWWWWWWWWWWWW-..........\n";
+
 /**
  * @brief Tokenize a C string 
  * 
@@ -39,9 +62,8 @@ int main(int argc, char **argv) {
 }
 
 void welcome(void) {
-  printf("\n**********************************************\n");
-  printf("**********Welcome to the Dragonshell**********\n");
-  printf("**********************************************\n\n");
+  printf("\n%s", DRAGON_IMAGE);
+  printf("\n********Welcome to the Dragonshell*********\n");
 }
 
 int readInput(void) {
