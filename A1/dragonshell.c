@@ -1,6 +1,7 @@
 #include <stddef.h>
 #include <string.h>
 
+#include <unistd.h>
 #include <stdio.h>
 
 const char *DRAGON_IMAGE = "...........................................\n\
@@ -45,7 +46,9 @@ void tokenize(char* str, const char* delim, char ** argv) {
 
 void welcome(void);
 
-int readInput();
+char *getInput();
+
+
 
 int main(int argc, char **argv) {
   // print the string prompt without a newline, before beginning to read
@@ -55,7 +58,7 @@ int main(int argc, char **argv) {
   welcome();
 
   while (1) {
-    readInput();
+    char *input = getInput();
   }
 
   return 0;
@@ -66,14 +69,13 @@ void welcome(void) {
   printf("\n********Welcome to the Dragonshell*********\n");
 }
 
-int readInput(void) {
-  char input;
-  printf("\ndragonshell>> ");
-  scanf("%s", &input); // get input
-  if (strlen(&input) != 0) { // if input is not empty
-    return 0;
-  } else {
-    return 1;
-  }
-}
+char *getInput(void) {
+  // TODO: can we use malloc? if not, cannot dynamicly change array size
+  char input[100];
+  char *inputPointer = input;
 
+  printf("\ndragonshell>> ");
+  fgets(input, sizeof(input), stdin); // get input
+
+  return inputPointer;
+}
