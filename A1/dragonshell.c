@@ -4,7 +4,7 @@
 #include <unistd.h>
 #include <stdio.h>
 
-const char *DRAGON_IMAGE = "...........................................\n\
+const char *WELCOME = "...........................................\n\
 ........=..................................\n\
 .........=#-.......-:*==+..................\n\
 ...........=W=-..........+W#-..............\n\
@@ -25,7 +25,36 @@ const char *DRAGON_IMAGE = "...........................................\n\
 ....#=-@WWWWWWWWWWWWWWWWWWW@:..............\n\
 ...-*...#WWWWWWWWWWWWWWWWWWWWW:............\n\
 ...--....*WWWWWWWWWWWWWWWWWWWWW*...........\n\
-..........*WWWWWWWWWWWWWWWWWWWWW-..........\n";
+..........*WWWWWWWWWWWWWWWWWWWWW-..........\n\n\
+********Welcome to the Dragonshell*********\n";
+
+void tokenize(char *str, const char *delim, char **argv);
+char *get_input();
+
+int main(int argc, char **argv) {
+  // print the string prompt without a newline, before beginning to read
+  // tokenize the input, run the command(s), and print the result
+  // do this in a loop
+
+  printf("%s", WELCOME); // prints welcome text
+
+  while (1) {
+    char *input = get_input();
+
+    // convert char* to char[], so tokenize can run properly
+    char input_arr[strlen(input)]; 
+    for(size_t i = 0; i < strlen(input); i++){
+      input_arr[i] = input[i];
+    }
+
+    char *delim = " ";
+    char *tokenized[100];
+    tokenize(input_arr, delim, tokenized);
+    printf("\n%s", tokenized[1]);
+  }
+
+  return 0;
+}
 
 /**
  * @brief Tokenize a C string 
@@ -35,8 +64,8 @@ const char *DRAGON_IMAGE = "...........................................\n\
  * @param argv - A char* array that will contain the tokenized strings
  * Make sure that you allocate enough space for the array.
  */
-void tokenize(char* str, const char* delim, char ** argv) {
-  char* token;
+void tokenize(char *str, const char *delim, char **argv) {
+  char *token;
   token = strtok(str, delim); // getting first token
   for(size_t i = 0; token != NULL; ++i){ //getting the following tokens
     argv[i] = token;
@@ -44,38 +73,13 @@ void tokenize(char* str, const char* delim, char ** argv) {
   }
 }
 
-void welcome(void);
-
-char *getInput();
-
-
-
-int main(int argc, char **argv) {
-  // print the string prompt without a newline, before beginning to read
-  // tokenize the input, run the command(s), and print the result
-  // do this in a loop
-
-  welcome();
-
-  while (1) {
-    char *input = getInput();
-  }
-
-  return 0;
-}
-
-void welcome(void) {
-  printf("\n%s", DRAGON_IMAGE);
-  printf("\n********Welcome to the Dragonshell*********\n");
-}
-
-char *getInput(void) {
+char *get_input(void) {
   // TODO: can we use malloc? if not, cannot dynamicly change array size
   char input[100];
-  char *inputPointer = input;
+  char *input_ptr = input;
 
   printf("\ndragonshell>> ");
   fgets(input, sizeof(input), stdin); // get input
 
-  return inputPointer;
+  return input_ptr;
 }
