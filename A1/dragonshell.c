@@ -112,18 +112,32 @@ int handle_input() {
 }
 
 int handle_cd(char *tokenized[]) {
-  if (tokenized[1] == NULL) { // if no argument given
+  char *arg = tokenized[1];
+  if (arg == NULL) { // if no argument given
     char *no_argument = "dragonshell: expected argument to \"cd\"\n";
     printf("%s", no_argument);
     return 1;
-  } else if (tokenized[2] != NULL) {
+  } else if (tokenized[2] != NULL) { // if 3rd argument is given
     char *three_arguments = "dragonshell: too many arguments for \"cd\"\n";
     printf("%s", three_arguments);
     return 1;
+  } else { // if 2nd argument is given
+    if (strcmp(arg, "..") == 0) {
+      chdir("..");
+    } else { // cd to some dir
+      if (chdir(arg) == 0) {
+        chdir(arg);
+      } else {
+        char *wrong_dir = "dragonshell: No such file or directory\n";
+        printf("%s", wrong_dir);
+      }
+    }
   }
   return 0;
 }
 
-int handle_pwd() {
+int handle_pwd(char *tokenized[]) {
+  char cwd[100];
+  printf("%s\n", getcwd(cwd, 100)); 
   return 0;
 }
