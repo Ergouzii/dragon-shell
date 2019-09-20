@@ -77,12 +77,6 @@ int handle_input() {
   char input[100];
   fgets(input, sizeof(input), stdin); // get input
 
-  // if (input[0] == ' ') {
-  //   char *space_input = "dragonshell: please do not include space at start\n";
-  //   printf("%s", space_input);
-  //   exit(1);
-  // }
-
   // remove newline at the end of "fgets"
   size_t len = strlen(input) - 1;
   if (input[len] == '\n') {
