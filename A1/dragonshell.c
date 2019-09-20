@@ -72,7 +72,7 @@ void tokenize(char *str, const char *delim, char **argv) {
 int handle_input() {
 
   printf("\ndragonshell>> ");
-  char *input = malloc(sizeof(char) * 100);
+  char input[100];
   fgets(input, sizeof(input), stdin); // get input
 
   // remove newline at the end of "fgets"
@@ -94,18 +94,15 @@ int handle_input() {
     char **tokenized = malloc(sizeof(char) * 100);
     tokenize(input, delim, tokenized);
 
-    printf("%s\n", tokenized[0]);
-    printf("%s", tokenized[1]);
+    // printf("%s\n", tokenized[0]);
+    // printf("%s", tokenized[1]);
 
     // check which cmd is entered and handle them
     char *cd_cmd = "cd";
     char *pwd_cmd = "pwd";
     char *input_cmd = tokenized[0];
     if (strcmp(input_cmd, cd_cmd) == 0) { // if cd cmd
-      if (tokenized[1] == NULL) { 
-        char *no_argument = "dragonshell: expected argument to \"cd\"";
-        printf("%s", no_argument);
-      }
+      handle_cd(tokenized);
     } else if (strcmp(input_cmd, pwd_cmd) == 0) { // if pwd cmd
       handle_pwd(tokenized);
     }
@@ -114,7 +111,16 @@ int handle_input() {
   return 0;
 }
 
-int handle_cd() {
+int handle_cd(char *tokenized[]) {
+  if (tokenized[1] == NULL) { // if no argument given
+    char *no_argument = "dragonshell: expected argument to \"cd\"\n";
+    printf("%s", no_argument);
+    return 1;
+  } else if (tokenized[2] != NULL) {
+    char *three_arguments = "dragonshell: too many arguments for \"cd\"\n";
+    printf("%s", three_arguments);
+    return 1;
+  }
   return 0;
 }
 
