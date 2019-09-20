@@ -3,6 +3,7 @@
 
 #include <unistd.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 const char *WELCOME = "...........................................\n\
 ........=..................................\n\
@@ -28,8 +29,14 @@ const char *WELCOME = "...........................................\n\
 ..........*WWWWWWWWWWWWWWWWWWWWW-..........\n\n\
 ********Welcome to the Dragonshell*********\n";
 
+// TODO: these are for debugging uses
+const char *OK = "**OK**";
+const char *BAD = "**BAD**";
+
 void tokenize(char *str, const char *delim, char **argv);
-char *get_input();
+int handle_input();
+int handle_cd();
+int handle_pwd();
 
 int main(int argc, char **argv) {
   // print the string prompt without a newline, before beginning to read
@@ -39,18 +46,7 @@ int main(int argc, char **argv) {
   printf("%s", WELCOME); // prints welcome text
 
   while (1) {
-    char *input = get_input();
-
-    // convert char* to char[], so tokenize can run properly
-    char input_arr[strlen(input)]; 
-    for(size_t i = 0; i < strlen(input); i++){
-      input_arr[i] = input[i];
-    }
-
-    char *delim = " ";
-    char *tokenized[100];
-    tokenize(input_arr, delim, tokenized);
-    printf("\n%s", tokenized[1]);
+    handle_input();
   }
 
   return 0;
@@ -73,13 +69,55 @@ void tokenize(char *str, const char *delim, char **argv) {
   }
 }
 
-char *get_input(void) {
-  // TODO: can we use malloc? if not, cannot dynamicly change array size
-  char input[100];
-  char *input_ptr = input;
+int handle_input() {
 
   printf("\ndragonshell>> ");
+  char *input = malloc(sizeof(char) * 100);
   fgets(input, sizeof(input), stdin); // get input
 
-  return input_ptr;
+  // remove newline at the end of "fgets"
+  size_t len = strlen(input) - 1;
+  if (input[len] == '\n') {
+    input[len] = '\0';
+  }
+
+  // if input is empty
+  size_t empty = 0;
+  if (strlen(input) == empty) { 
+    char *empty_input = "dragonshell: please give an input\n";
+    printf("%s", empty_input);
+    
+  } else { // if input is not empty
+
+    // tokenize the input
+    char *delim = " ";
+    char **tokenized = malloc(sizeof(char) * 100);
+    tokenize(input, delim, tokenized);
+
+    printf("%s\n", tokenized[0]);
+    printf("%s", tokenized[1]);
+
+    // check which cmd is entered and handle them
+    char *cd_cmd = "cd";
+    char *pwd_cmd = "pwd";
+    char *input_cmd = tokenized[0];
+    if (strcmp(input_cmd, cd_cmd) == 0) { // if cd cmd
+      if (tokenized[1] == NULL) { 
+        char *no_argument = "dragonshell: expected argument to \"cd\"";
+        printf("%s", no_argument);
+      }
+    } else if (strcmp(input_cmd, pwd_cmd) == 0) { // if pwd cmd
+      handle_pwd(tokenized);
+    }
+  }
+
+  return 0;
+}
+
+int handle_cd() {
+  return 0;
+}
+
+int handle_pwd() {
+  return 0;
 }
