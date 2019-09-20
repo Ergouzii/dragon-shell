@@ -155,6 +155,7 @@ int handle_path(char *tokenized[]) {
 }
 
 int handle_exit(char *tokenized[]) {
+  // TODO: add keydown events
   char *exiting = "dragonshell: Exiting\n";
   printf("%s\n", exiting);
   _exit(1);
