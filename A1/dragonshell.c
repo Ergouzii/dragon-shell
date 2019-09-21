@@ -111,7 +111,7 @@ int handle_input() {
     } else if (strcmp(input_cmd, exit_cmd) == 0) {
       handle_exit(tokenized);
     } else {
-      char *unknown = "dragonshell: unknown command\n";
+      char *unknown = "dragonshell: Command not found\n";
       printf("%s", unknown);
     }
   }
