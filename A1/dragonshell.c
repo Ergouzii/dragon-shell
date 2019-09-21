@@ -34,21 +34,36 @@ const char *OK = "**OK**";
 const char *BAD = "**BAD**";
 
 void tokenize(char *str, const char *delim, char **argv);
-int handle_input();
+int handle_input(char *path);
 int handle_cd(char *tokenized[]);
 int handle_pwd(char *tokenized[]);
-int handle_path(char *tokenized[]);
+int handle_path(char *tokenized[], char *path);
+int handle_a2path(char *tokenized[]);
 int handle_exit(char *tokenized[]);
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv, char **envp) {
   // print the string prompt without a newline, before beginning to read
   // tokenize the input, run the command(s), and print the result
   // do this in a loop
 
   printf("%s", WELCOME); // prints welcome text
 
+  // get PATH variable
+  char *path;
+  for (int i = 0; envp[i] != NULL; i++) {
+    if (strncmp(envp[i], "PATH", 4) == 0) {
+      path = envp[i];
+    }
+  }
+  // remove the begining "PATH="
+  int i = 0;
+  while (i < 5) {
+    path++;
+    i++;
+  }
+
   while (1) {
-    handle_input();
+    handle_input(path);
   }
 
   return 0;
@@ -71,7 +86,7 @@ void tokenize(char *str, const char *delim, char **argv) {
   }
 }
 
-int handle_input() {
+int handle_input(char *path) {
 
   printf("\ndragonshell>> ");
   char input[100];
@@ -101,12 +116,11 @@ int handle_input() {
     char **tokenized = malloc(sizeof(char) * 100);
     tokenize(input, delim, tokenized);
 
-    // printf("%s\n", tokenized[0]);
-    // printf("%s", tokenized[1]);
-
     // check which cmd is entered and handle them
     char *cd_cmd = "cd";
     char *pwd_cmd = "pwd";
+    char *path_cmd = "$PATH";
+    char *a2path_cmd = "a2path";
     char *exit_cmd = "exit";
     char *input_cmd = tokenized[0];
     if (strcmp(input_cmd, cd_cmd) == 0) { // if cd cmd
@@ -115,6 +129,10 @@ int handle_input() {
       handle_pwd(tokenized);
     } else if (strcmp(input_cmd, exit_cmd) == 0) {
       handle_exit(tokenized);
+    } else if (strcmp(input_cmd, path_cmd) == 0) {
+      handle_path(tokenized, path);
+    } else if (strcmp(input_cmd, a2path_cmd) == 0) {
+      handle_a2path(tokenized);
     } else {
       char *unknown = "dragonshell: Command not found\n";
       printf("%s", unknown);
@@ -155,7 +173,12 @@ int handle_pwd(char *tokenized[]) {
   return 0;
 }
 
-int handle_path(char *tokenized[]) {
+int handle_path(char *tokenized[], char *path) {
+  printf("Current PATH: %s", path);
+  return 0;
+}
+
+int handle_a2path(char *tokenized[]) {
   return 0;
 }
 
