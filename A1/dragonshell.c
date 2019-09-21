@@ -75,7 +75,12 @@ int handle_input() {
 
   printf("\ndragonshell>> ");
   char input[100];
-  fgets(input, sizeof(input), stdin); // get input
+  if (fgets(input, sizeof(input), stdin) == NULL) { // get input
+    // catching ctrl + D, exit shell as catched
+    char *exiting = "\ndragonshell: Exiting\n";
+    printf("%s\n", exiting);
+    _exit(1);
+  }; 
 
   // remove newline at the end of "fgets"
   size_t len = strlen(input) - 1;
