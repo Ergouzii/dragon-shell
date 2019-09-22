@@ -31,7 +31,7 @@ const char *WELCOME = "...........................................\n\
 
 char PATH[100] = "/bin/:/usr/bin/";
 
-// TODO: these are for debugging uses
+// TODO: delete these before submitting
 const char *OK = "**OK**";
 const char *BAD = "**BAD**";
 
@@ -80,7 +80,7 @@ int handle_input() {
   // get input
   char input[100];
   if (fgets(input, sizeof(input), stdin) == NULL) { 
-    // catching ctrl + D, exit shell as catched
+    // catching ctrl + D, exit shell as caught
     char *exiting = "\ndragonshell: Exiting\n";
     printf("%s\n", exiting);
     _exit(1);
@@ -179,10 +179,8 @@ int handle_a2path(char *tokenized[]) {
     printf("%s", three_arguments);
     return 1;
   } else { // if only 1 arg given (normal use case)
-    if (strncmp(arg, "$PATH:", 6) != 0) { // if arg does not start with "$PATH"
-      char *no_append_path = "dragonshell: please enter in form of \"a2path $PATH:/*/*/*\"\n";
-      printf("%s", no_append_path);
-      return 1;
+    if (strncmp(arg, "$PATH:", 6) != 0) { // if arg does not start with "$PATH:"
+      strcpy(PATH, arg); // overwrite PATH
     } else { // if arg gives something to add
       char **tokenized_arg = malloc(sizeof(char) * 100);
       char *delim = ":";
