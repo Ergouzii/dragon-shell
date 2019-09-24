@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <signal.h>
 
 const char *WELCOME = "...........................................\n\
 ........=..................................\n\
@@ -29,7 +30,7 @@ const char *WELCOME = "...........................................\n\
 ..........*WWWWWWWWWWWWWWWWWWWWW-..........\n\n\
 ********Welcome to the Dragonshell*********\n";
 
-char PATH[100] = "/bin/:/usr/bin/";
+char PATH[100] = "/bin/:/usr/bin/"; // TODO: localize PATH var?
 
 // TODO: delete these before submitting
 const char *OK = "**OK**";
@@ -42,6 +43,8 @@ int handle_pwd(char *tokenized[]);
 int handle_path(char *tokenized[]);
 int handle_a2path(char *tokenized[]);
 int handle_exit(char *tokenized[]);
+int accessible_from_path(char *program, char valid_program_path[]);
+void run_external_program(char *tokenied[], char *valid_program_path);
 
 int main(int argc, char **argv) {
   // print the string prompt without a newline, before beginning to read
@@ -83,6 +86,7 @@ int handle_input() {
     // catching ctrl + D, exit shell as caught
     char *exiting = "\ndragonshell: Exiting\n";
     printf("%s\n", exiting);
+    kill(0, SIGKILL); // kill all processes
     _exit(1);
   }; 
 
@@ -102,7 +106,7 @@ int handle_input() {
   } else { // if input is not empty
     // tokenize the input
     char *delim = " ";
-    char **tokenized = malloc(sizeof(char) * 100);
+    char **tokenized = malloc(sizeof(char) * 100); //TODO: free it at end of this func?
     tokenize(input, delim, tokenized);
 
     // check which cmd is entered and handle them
@@ -112,20 +116,24 @@ int handle_input() {
     char *a2path_cmd = "a2path";
     char *exit_cmd = "exit";
     char *input_cmd = tokenized[0];
+    char valid_program_path[100];
     if (strcmp(input_cmd, cd_cmd) == 0) { // if cd cmd
       handle_cd(tokenized);
     } else if (strcmp(input_cmd, pwd_cmd) == 0) { // if pwd cmd
       handle_pwd(tokenized);
-    } else if (strcmp(input_cmd, exit_cmd) == 0) {
+    } else if (strcmp(input_cmd, exit_cmd) == 0) { // if exit cmd
       handle_exit(tokenized);
-    } else if (strcmp(input_cmd, path_cmd) == 0) {
+    } else if (strcmp(input_cmd, path_cmd) == 0) { // if $PATH cmd
       handle_path(tokenized);
-    } else if (strcmp(input_cmd, a2path_cmd) == 0) {
+    } else if (strcmp(input_cmd, a2path_cmd) == 0) { // if a2path cmd
       handle_a2path(tokenized);
+    } else if ((access(input_cmd, F_OK & X_OK) != -1) || (accessible_from_path(input_cmd, valid_program_path) != -1)) { // if input a valid program
+      run_external_program(tokenized, valid_program_path);
     } else {
       char *unknown = "dragonshell: Command not found\n";
       printf("%s", unknown);
     }
+    free(tokenized);
   }
 
   return 0;
@@ -202,6 +210,50 @@ int handle_a2path(char *tokenized[]) {
 int handle_exit(char *tokenized[]) {
   char *exiting = "dragonshell: Exiting\n";
   printf("%s\n", exiting);
+  kill(0, SIGKILL); // kill all processes
   _exit(1);
   return 0;
 }
+
+/**
+ * @brief Search from path to find if file is accessible
+ * 
+ * @param program - The file we want to find if is accessible
+ *        valid_program_path - the valid program path found
+ * 
+ * @return 0 if "run" is found to be accessible in given path
+ *         -1 otherwise
+ */
+int accessible_from_path(char *program, char valid_program_path[]) {
+    char *delim = ":";
+    char *tokenized[100];
+    char temp_path[100];
+    strcpy(temp_path, PATH);
+    tokenize(temp_path, delim, tokenized);
+    int i = 0;
+    while (tokenized[i] != NULL) {
+        strcpy(valid_program_path, tokenized[i]);
+        strcat(valid_program_path, program); // add one path in PATH in front of our "run", like: /bin/ls
+        if (access(valid_program_path, F_OK & X_OK) != -1) {
+            return 0;
+        }
+        i ++;
+    }
+    return -1;
+}
+
+void run_external_program(char *tokenized[], char *valid_program_path) {
+  // TODO: program execution output starts with dragonshell>>, is it caused by processes?
+  pid_t pid;
+  
+  printf("%s", valid_program_path);
+
+  char *exec_arg[] = {valid_program_path, tokenized[1], NULL}; // TODO: sometimes gives Bad address
+  if ((pid = fork()) == -1) {
+    perror("\ndragonshell: fork failed\n");
+  } else if (pid == 0) {
+    execve(exec_arg[0], exec_arg, NULL); // running external program
+    perror("\ndragonshell: execve error");
+  }
+}
+      
