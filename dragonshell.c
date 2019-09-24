@@ -117,6 +117,7 @@ int handle_input() {
     char *exit_cmd = "exit";
     char *input_cmd = tokenized[0];
     char valid_program_path[100];
+    strcpy(valid_program_path, input_cmd); // initialize path with input_cmd in case program is at cur dir
     if (strcmp(input_cmd, cd_cmd) == 0) { // if cd cmd
       handle_cd(tokenized);
     } else if (strcmp(input_cmd, pwd_cmd) == 0) { // if pwd cmd
@@ -226,13 +227,13 @@ int handle_exit(char *tokenized[]) {
  */
 int accessible_from_path(char *program, char valid_program_path[]) {
     char *delim = ":";
-    char *tokenized[100];
+    char *tokenized_path[100];
     char temp_path[100];
     strcpy(temp_path, PATH);
-    tokenize(temp_path, delim, tokenized);
+    tokenize(temp_path, delim, tokenized_path);
     int i = 0;
-    while (tokenized[i] != NULL) {
-        strcpy(valid_program_path, tokenized[i]);
+    while (tokenized_path[i] != NULL) {
+        strcpy(valid_program_path, tokenized_path[i]);
         strcat(valid_program_path, program); // add one path in PATH in front of our "run", like: /bin/ls
         if (access(valid_program_path, F_OK & X_OK) != -1) {
             return 0;
@@ -249,11 +250,13 @@ void run_external_program(char *tokenized[], char *valid_program_path) {
   printf("%s", valid_program_path);
 
   char *exec_arg[] = {valid_program_path, tokenized[1], NULL}; // TODO: sometimes gives Bad address
+  char *envp[] = {NULL};
   if ((pid = fork()) == -1) {
     perror("\ndragonshell: fork failed\n");
   } else if (pid == 0) {
-    execve(exec_arg[0], exec_arg, NULL); // running external program
-    perror("\ndragonshell: execve error");
+    if (execve(exec_arg[0], exec_arg, envp) == -1) { // running external program
+      perror("\ndragonshell: execve error");
+    }  
   }
 }
       
