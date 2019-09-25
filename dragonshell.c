@@ -45,6 +45,7 @@ int handle_a2path(char *tokenized[]);
 int handle_exit(char *tokenized[]);
 int accessible_from_path(char *program, char valid_program_path[]);
 void run_external_program(char *tokenied[], char *valid_program_path);
+void redirection();
 
 int main(int argc, char **argv) {
   // print the string prompt without a newline, before beginning to read
@@ -106,7 +107,7 @@ int handle_input() {
   } else { // if input is not empty
     // tokenize the input
     char *delim = " ";
-    char **tokenized = malloc(sizeof(char) * 100); //TODO: free it at end of this func?
+    char **tokenized = malloc(sizeof(char *) * 100); //TODO: free it at end of this func?
     tokenize(input, delim, tokenized);
 
     // check which cmd is entered and handle them
@@ -134,7 +135,7 @@ int handle_input() {
       char *unknown = "dragonshell: Command not found\n";
       printf("%s", unknown);
     }
-    free(tokenized);
+    //free(tokenized);
   }
 
   return 0;
@@ -244,19 +245,29 @@ int accessible_from_path(char *program, char valid_program_path[]) {
 }
 
 void run_external_program(char *tokenized[], char *valid_program_path) {
-  // TODO: program execution output starts with dragonshell>>, is it caused by processes?
-  pid_t pid;
   
-  printf("%s", valid_program_path);
-
-  char *exec_arg[] = {valid_program_path, tokenized[1], NULL}; // TODO: sometimes gives Bad address
+  pid_t pid;
+  char *exec_arg[10] = {};
+  exec_arg[0] = valid_program_path;
+  int i = 1;
+  while (tokenized[i] != NULL) { // put arguments into exec_arg
+    //printf("%s", tokenized[i]);
+    exec_arg[i] = tokenized[i];
+    i++;
+  }
+  exec_arg[i+1] = NULL;
   char *envp[] = {NULL};
+
   if ((pid = fork()) == -1) {
-    perror("\ndragonshell: fork failed\n");
+    perror("dragonshell: fork failed\n");
   } else if (pid == 0) {
     if (execve(exec_arg[0], exec_arg, envp) == -1) { // running external program
-      perror("\ndragonshell: execve error");
+      perror("dragonshell: execve error");
     }  
   }
+  wait(NULL); // wait for child process done
 }
       
+void redirection() {
+
+}
