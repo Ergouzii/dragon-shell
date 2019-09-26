@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <signal.h>
+#include <fcntl.h> // for open
 
 const char *WELCOME = "...........................................\n\
 ........=..................................\n\
@@ -39,14 +40,13 @@ const char *BAD = "**BAD**";
 void tokenize(char *str, const char *delim, char **argv);
 int handle_input();
 int handle_cd(char **tokenized);
-int handle_pwd(char **tokenized);
-int handle_path();
+int handle_pwd(char output[]);
 int handle_a2path(char **tokenized);
 int handle_exit(char **tokenized);
 int accessible_from_path(char *program, char valid_program_path[]);
 void run_external_program(char **tokenied, char *valid_program_path);
-int check_redirectrion(char **tokenized);
-void redirection();
+int check_redirection(char **tokenized);
+void handle_redirection(char *dest, char output[]);
 
 int main(int argc, char **argv) {
   // print the string prompt without a newline, before beginning to read
@@ -120,22 +120,29 @@ int handle_input() {
     char *input_cmd = tokenized[0];
     char valid_program_path[100];
     strcpy(valid_program_path, input_cmd); // initialize path with input_cmd in case program is at cur dir
-    char *redirection_symbol = ">";
 
     if (strcmp(input_cmd, cd_cmd) == 0) { // if cd cmd
-      if (strcmp(tokenized[1], redirection_symbol) && (tokenized[2] != NULL)) { // TODO: when tokenized[2] nonexist, need to create file
-
-      }
       handle_cd(tokenized);
     } else if (strcmp(input_cmd, pwd_cmd) == 0) { // if pwd cmd
-      handle_pwd(tokenized);
+      char output[100];
+      handle_pwd(output);
+      if (check_redirection(tokenized) == 0) { // if redirection required
+        handle_redirection(tokenized[2], output);
+      } else {
+        printf("%s\n", output);
+      }
     } else if (strcmp(input_cmd, exit_cmd) == 0) { // if exit cmd
       handle_exit(tokenized);
     } else if (strcmp(input_cmd, path_cmd) == 0) { // if $PATH cmd
-      handle_path(tokenized);
+      if (check_redirection(tokenized) == 0) { // if redirection required
+        handle_redirection(tokenized[2], PATH);
+      } else {
+        printf("Current PATH: %s\n", PATH);
+      }
     } else if (strcmp(input_cmd, a2path_cmd) == 0) { // if a2path cmd
       handle_a2path(tokenized);
     } else if ((access(input_cmd, F_OK & X_OK) != -1) || (accessible_from_path(input_cmd, valid_program_path) != -1)) { // if input a valid program
+
       run_external_program(tokenized, valid_program_path);
     } else {
       char *unknown = "dragonshell: Command not found\n";
@@ -173,14 +180,8 @@ int handle_cd(char **tokenized) {
   return 0;
 }
 
-int handle_pwd(char **tokenized) {
-  char cwd[100];
-  printf("%s\n", getcwd(cwd, 100)); 
-  return 0;
-}
-
-int handle_path() {
-  printf("Current PATH: %s\n", PATH);
+int handle_pwd(char output[]) {
+  getcwd(output, 100);
   return 0;
 }
 
@@ -273,7 +274,24 @@ void run_external_program(char **tokenized, char *valid_program_path) {
   }
   wait(NULL); // wait for child process done
 }
-      
-void redirection() {
 
+// return 0 if there is redirection symbol at tokenized[1], and tokenized[2] != NULL
+int check_redirection(char **tokenized) {
+  char *redirection_symbol = ">";
+  // if 2 arguments and 1st first one is ">"
+  if ((tokenized[1] != NULL) && (strcmp(tokenized[1], redirection_symbol) == 0) && (tokenized[2] != NULL)) {
+    return 0;
+  } else {
+    return 1;
+  }
+}
+      
+// param flag = 1: no extra process, flag = 2: need child process
+void handle_redirection(char *dest, char output[]) {
+    int fd;
+    if((fd = open(dest, O_CREAT | O_WRONLY | O_TRUNC, 644)) < 0) { // TODO: overwrite existing file content
+      perror("dragonshell: open failed");
+    }
+    write(fd, output, strlen(output)); // redirecting output to fd
+    close(fd);
 }
