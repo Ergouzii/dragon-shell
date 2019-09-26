@@ -45,7 +45,7 @@ int handle_a2path(char **tokenized);
 int handle_exit(char **tokenized);
 int accessible_from_path(char *program, char valid_program_path[]);
 int run_external_program(char **tokenied, char *valid_program_path, int need_redirection);
-int check_redirection(char **tokenized);
+int symbol_exist(char **tokenized, char *symbol);
 void handle_redirection(char *dest, char output[]);
 
 int main(int argc, char **argv) {
@@ -126,7 +126,7 @@ int handle_input() {
     } else if (strcmp(input_cmd, pwd_cmd) == 0) { // if pwd cmd
       char output[100];
       handle_pwd(output);
-      if (check_redirection(tokenized) == 0) { // if redirection required
+      if (symbol_exist(tokenized, ">") == 0) { // if redirection required
         handle_redirection(tokenized[2], output);
       } else {
         printf("%s\n", output);
@@ -134,16 +134,17 @@ int handle_input() {
     } else if (strcmp(input_cmd, exit_cmd) == 0) { // if exit cmd
       handle_exit(tokenized);
     } else if (strcmp(input_cmd, path_cmd) == 0) { // if $PATH cmd
-      if (check_redirection(tokenized) == 0) { // if redirection required
+      if (symbol_exist(tokenized, ">") == 0) { // if redirection required
         handle_redirection(tokenized[2], PATH);
       } else {
         printf("Current PATH: %s\n", PATH);
       }
     } else if (strcmp(input_cmd, a2path_cmd) == 0) { // if a2path cmd
       handle_a2path(tokenized);
-    } else if ((access(input_cmd, F_OK & X_OK) != -1) || (accessible_from_path(input_cmd, valid_program_path) != -1)) { // if input a valid program
+    } else if ((access(input_cmd, F_OK & X_OK) != -1) \
+        || (accessible_from_path(input_cmd, valid_program_path) != -1)) { // if input a valid program
       int need_redirection = 1;
-      if (check_redirection(tokenized) == 0) {
+      if (symbol_exist(tokenized, ">") == 0) {
         need_redirection = 0;
       }
       run_external_program(tokenized, valid_program_path, need_redirection);     
@@ -298,11 +299,11 @@ int run_external_program(char **tokenized, char *valid_program_path, int need_re
   return 0;
 }
 
-// return 0 if there is redirection symbol exist
-int check_redirection(char **tokenized) {
+// return 0 if there is given symbol exist in tokenized, 1 otherwise
+int symbol_exist(char **tokenized, char *symbol) {
   int i = 0;
   while (tokenized[i] != NULL) {
-    if (strcmp(tokenized[i], ">") == 0) { // if ">" in tokenized
+    if (strcmp(tokenized[i], symbol) == 0) { // if given symbol in tokenized
       return 0;
     }
     i++;
