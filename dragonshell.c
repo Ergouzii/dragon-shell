@@ -44,7 +44,7 @@ int handle_pwd(char output[]);
 int handle_a2path(char **tokenized);
 int handle_exit(char **tokenized);
 int accessible_from_path(char *program, char valid_program_path[]);
-void run_external_program(char **tokenied, char *valid_program_path);
+int run_external_program(char **tokenied, char *valid_program_path, int need_redirection);
 int check_redirection(char **tokenized);
 void handle_redirection(char *dest, char output[]);
 
@@ -142,8 +142,11 @@ int handle_input() {
     } else if (strcmp(input_cmd, a2path_cmd) == 0) { // if a2path cmd
       handle_a2path(tokenized);
     } else if ((access(input_cmd, F_OK & X_OK) != -1) || (accessible_from_path(input_cmd, valid_program_path) != -1)) { // if input a valid program
-
-      run_external_program(tokenized, valid_program_path);
+      int need_redirection = 1;
+      if (check_redirection(tokenized) == 0) {
+        need_redirection = 0;
+      }
+      run_external_program(tokenized, valid_program_path, need_redirection);     
     } else {
       char *unknown = "dragonshell: Command not found\n";
       printf("%s", unknown);
@@ -251,45 +254,66 @@ int accessible_from_path(char *program, char valid_program_path[]) {
     return -1;
 }
 
-void run_external_program(char **tokenized, char *valid_program_path) {
+int run_external_program(char **tokenized, char *valid_program_path, int need_redirection) {
+  // error handling
+  if ((tokenized[1] != NULL) && (strcmp(tokenized[1], ">") == 0) && (tokenized[2] == NULL)) {
+    perror("dragonshell: please give one destination file");
+    return 1;
+  }
   
   pid_t pid;
   char *exec_arg[10] = {};
   exec_arg[0] = valid_program_path;
   int i = 1;
-  while (tokenized[i] != NULL) { // put arguments into exec_arg
-    //printf("%s", tokenized[i]);
+  while ((tokenized[i] != NULL) && (strcmp(tokenized[i], ">") != 0)) { // put arguments into exec_arg
     exec_arg[i] = tokenized[i];
     i++;
   }
+  
+  i = 0;
+  while (tokenized[i] != NULL){
+    i++; // getting length of input
+  }
+  char *dest = tokenized[i-1]; // last input of argument is dest file
+
   exec_arg[i+1] = NULL;
   char *envp[] = {NULL};
 
   if ((pid = fork()) == -1) {
     perror("dragonshell: fork failed\n");
   } else if (pid == 0) {
+    if (need_redirection == 0) {
+      int fd;
+      if((fd = open(dest, O_CREAT | O_WRONLY | O_TRUNC, 644)) < 0) {
+        perror("dragonshell: open failed");
+      }
+      dup2(fd, STDOUT_FILENO); // redirecting output to fd
+      close(fd);
+    }
     if (execve(exec_arg[0], exec_arg, envp) == -1) { // running external program
       perror("dragonshell: execve error");
-    }  
+    }
   }
   wait(NULL); // wait for child process done
+  return 0;
 }
 
-// return 0 if there is redirection symbol at tokenized[1], and tokenized[2] != NULL
+// return 0 if there is redirection symbol exist
 int check_redirection(char **tokenized) {
-  char *redirection_symbol = ">";
-  // if 2 arguments and 1st first one is ">"
-  if ((tokenized[1] != NULL) && (strcmp(tokenized[1], redirection_symbol) == 0) && (tokenized[2] != NULL)) {
-    return 0;
-  } else {
-    return 1;
+  int i = 0;
+  while (tokenized[i] != NULL) {
+    if (strcmp(tokenized[i], ">") == 0) { // if ">" in tokenized
+      return 0;
+    }
+    i++;
   }
+  return 1;
 }
       
 // param flag = 1: no extra process, flag = 2: need child process
 void handle_redirection(char *dest, char output[]) {
     int fd;
-    if((fd = open(dest, O_CREAT | O_WRONLY | O_TRUNC, 644)) < 0) { // TODO: overwrite existing file content
+    if ((fd = open(dest, O_CREAT | O_WRONLY | O_TRUNC, 644)) < 0) { 
       perror("dragonshell: open failed");
     }
     write(fd, output, strlen(output)); // redirecting output to fd
