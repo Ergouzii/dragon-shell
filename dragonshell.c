@@ -38,13 +38,14 @@ const char *BAD = "**BAD**";
 
 void tokenize(char *str, const char *delim, char **argv);
 int handle_input();
-int handle_cd(char *tokenized[]);
-int handle_pwd(char *tokenized[]);
-int handle_path(char *tokenized[]);
-int handle_a2path(char *tokenized[]);
-int handle_exit(char *tokenized[]);
+int handle_cd(char **tokenized);
+int handle_pwd(char **tokenized);
+int handle_path();
+int handle_a2path(char **tokenized);
+int handle_exit(char **tokenized);
 int accessible_from_path(char *program, char valid_program_path[]);
-void run_external_program(char *tokenied[], char *valid_program_path);
+void run_external_program(char **tokenied, char *valid_program_path);
+int check_redirectrion(char **tokenized);
 void redirection();
 
 int main(int argc, char **argv) {
@@ -119,7 +120,12 @@ int handle_input() {
     char *input_cmd = tokenized[0];
     char valid_program_path[100];
     strcpy(valid_program_path, input_cmd); // initialize path with input_cmd in case program is at cur dir
+    char *redirection_symbol = ">";
+
     if (strcmp(input_cmd, cd_cmd) == 0) { // if cd cmd
+      if (strcmp(tokenized[1], redirection_symbol) && (tokenized[2] != NULL)) { // TODO: when tokenized[2] nonexist, need to create file
+
+      }
       handle_cd(tokenized);
     } else if (strcmp(input_cmd, pwd_cmd) == 0) { // if pwd cmd
       handle_pwd(tokenized);
@@ -141,7 +147,7 @@ int handle_input() {
   return 0;
 }
 
-int handle_cd(char *tokenized[]) {
+int handle_cd(char **tokenized) {
   char *arg = tokenized[1];
   if (arg == NULL) { // if no argument given
     char *no_argument = "dragonshell: expected argument to \"cd\"\n";
@@ -167,18 +173,18 @@ int handle_cd(char *tokenized[]) {
   return 0;
 }
 
-int handle_pwd(char *tokenized[]) {
+int handle_pwd(char **tokenized) {
   char cwd[100];
   printf("%s\n", getcwd(cwd, 100)); 
   return 0;
 }
 
-int handle_path(char *tokenized[]) {
+int handle_path() {
   printf("Current PATH: %s\n", PATH);
   return 0;
 }
 
-int handle_a2path(char *tokenized[]) {
+int handle_a2path(char **tokenized) {
   char *arg = tokenized[1];
   if (arg == NULL) { // if no argument given
     char *no_argument = "dragonshell: expected argument to \"a2path\"\n";
@@ -209,7 +215,7 @@ int handle_a2path(char *tokenized[]) {
   return 0;
 }
 
-int handle_exit(char *tokenized[]) {
+int handle_exit(char **tokenized) {
   char *exiting = "dragonshell: Exiting\n";
   printf("%s\n", exiting);
   kill(0, SIGKILL); // kill all processes
@@ -244,7 +250,7 @@ int accessible_from_path(char *program, char valid_program_path[]) {
     return -1;
 }
 
-void run_external_program(char *tokenized[], char *valid_program_path) {
+void run_external_program(char **tokenized, char *valid_program_path) {
   
   pid_t pid;
   char *exec_arg[10] = {};
