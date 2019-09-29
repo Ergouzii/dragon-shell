@@ -37,6 +37,7 @@ char PATH[100] = "/bin/:/usr/bin/";
 
 void tokenize(char *str, const char *delim, char **argv);
 int handle_input();
+int run_cmd(char input[]);
 int handle_cd(char **tokenized);
 int handle_pwd(char output[]);
 int handle_a2path(char **tokenized);
@@ -106,61 +107,65 @@ int handle_input() {
     char *space_start = "dragonshell: please do not include space at start of line\n";
     printf("%s", space_start);  
   } else { // if input is not empty
-    // tokenize the input
-    char *delim = " ";
-    char temp_input[100];
-    strcpy(temp_input, input);
-    char **tokenized = malloc(sizeof(char *) * 100); //TODO: free it at end of this func?
-    tokenize(temp_input, delim, tokenized);
-
-    // check which cmd is entered and handle them
-    char *cd_cmd = "cd";
-    char *pwd_cmd = "pwd";
-    char *path_cmd = "$PATH";
-    char *a2path_cmd = "a2path";
-    char *exit_cmd = "exit";
-    char *input_cmd = tokenized[0];
-    char valid_program_path[100];
-    strcpy(valid_program_path, input_cmd); // initialize path with input_cmd in case program is at cur dir
-
-    if (strcmp(input_cmd, cd_cmd) == 0) { // if cd cmd
-      handle_cd(tokenized);
-    } else if (strcmp(input_cmd, pwd_cmd) == 0) { // if pwd cmd
-      char output[100];
-      handle_pwd(output);
-      if (symbol_exist(tokenized, ">") == 0) { // if redirection required
-        handle_redirection(tokenized[2], output);
-      } else {
-        printf("%s\n", output);
-      }
-    } else if (strcmp(input_cmd, exit_cmd) == 0) { // if exit cmd
-      handle_exit(tokenized);
-    } else if (strcmp(input_cmd, path_cmd) == 0) { // if $PATH cmd
-      if (symbol_exist(tokenized, ">") == 0) { // if redirection required
-        handle_redirection(tokenized[2], PATH);
-      } else {
-        printf("Current PATH: %s\n", PATH);
-      }
-    } else if (strcmp(input_cmd, a2path_cmd) == 0) { // if a2path cmd
-      handle_a2path(tokenized);
-    } else if ((access(input_cmd, F_OK & X_OK) != -1) \
-        || (accessible_from_path(input_cmd, valid_program_path) != -1)) { // if input is a valid program
-      int need_redirection = 1;
-      if (symbol_exist(tokenized, ">") == 0) {
-        need_redirection = 0;
-        run_external_program(tokenized, valid_program_path, need_redirection);
-      } else if (symbol_exist(tokenized, "|") == 0) {
-        piping(input, valid_program_path);
-      } else {
-        run_external_program(tokenized, valid_program_path, need_redirection);    
-      }
-    } else {
-      char *unknown = "dragonshell: Command not found\n";
-      printf("%s", unknown);
-    }
-    //free(tokenized);
+    run_cmd(input);
   }
+  return 0;
+}
 
+int run_cmd(char input[]) {
+  // tokenize the input
+  char *delim = " ";
+  char temp_input[100];
+  strcpy(temp_input, input);
+  char **tokenized = malloc(sizeof(char *) * 100); //TODO: free it at end of this func?
+  tokenize(temp_input, delim, tokenized);
+
+  // check which cmd is entered and handle them
+  char *cd_cmd = "cd";
+  char *pwd_cmd = "pwd";
+  char *path_cmd = "$PATH";
+  char *a2path_cmd = "a2path";
+  char *exit_cmd = "exit";
+  char *input_cmd = tokenized[0];
+  char valid_program_path[100];
+  strcpy(valid_program_path, input_cmd); // initialize path with input_cmd in case program is at cur dir
+
+  if (strcmp(input_cmd, cd_cmd) == 0) { // if cd cmd
+    handle_cd(tokenized);
+  } else if (strcmp(input_cmd, pwd_cmd) == 0) { // if pwd cmd
+    char output[100];
+    handle_pwd(output);
+    if (symbol_exist(tokenized, ">") == 0) { // if redirection required
+      handle_redirection(tokenized[2], output);
+    } else {
+      printf("%s\n", output);
+    }
+  } else if (strcmp(input_cmd, exit_cmd) == 0) { // if exit cmd
+    handle_exit(tokenized);
+  } else if (strcmp(input_cmd, path_cmd) == 0) { // if $PATH cmd
+    if (symbol_exist(tokenized, ">") == 0) { // if redirection required
+      handle_redirection(tokenized[2], PATH);
+    } else {
+      printf("Current PATH: %s\n", PATH);
+    }
+  } else if (strcmp(input_cmd, a2path_cmd) == 0) { // if a2path cmd
+    handle_a2path(tokenized);
+  } else if ((access(input_cmd, F_OK & X_OK) != -1) \
+      || (accessible_from_path(input_cmd, valid_program_path) != -1)) { // if input is a valid program
+    int need_redirection = 1;
+    if (symbol_exist(tokenized, ">") == 0) {
+      need_redirection = 0;
+      run_external_program(tokenized, valid_program_path, need_redirection);
+    } else if (symbol_exist(tokenized, "|") == 0) {
+      piping(input, valid_program_path);
+    } else {
+      run_external_program(tokenized, valid_program_path, need_redirection);    
+    }
+  } else {
+    char *unknown = "dragonshell: Command not found\n";
+    printf("%s", unknown);
+  }
+  //free(tokenized);
   return 0;
 }
 
