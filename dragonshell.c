@@ -291,7 +291,7 @@ int run_external_program(char **tokenized, char *valid_program_path, int need_re
   } else if (pid == 0) {
     if (need_redirection == 0) {
       int fd;
-      if((fd = open(dest, O_CREAT | O_WRONLY | O_TRUNC, 644)) < 0) {
+      if ((fd = open(dest, O_CREAT | O_WRONLY | O_TRUNC, 0644)) < 0) {
         perror("dragonshell: open failed");
       }
       dup2(fd, STDOUT_FILENO); // redirecting output to fd
