@@ -6,6 +6,8 @@
 #include <stdlib.h>
 #include <signal.h>
 #include <fcntl.h> // for open
+#include <sys/types.h>
+#include <sys/wait.h>
 
 const char *WELCOME = "...........................................\n\
 ........=..................................\n\
