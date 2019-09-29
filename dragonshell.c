@@ -362,6 +362,7 @@ int piping(char input[], char valid_program_path[]) {
 
   char *envp[] = {NULL}; // can be used for both program one & two
 
+  // TODO: avoid termination after piping
   // building a pipe, redirecting parent program's output to child program
   int fd[2];
   pid_t pid;
