@@ -37,7 +37,7 @@ char PATH[100] = "/bin/:/usr/bin/";
 
 void tokenize(char *str, const char *delim, char **argv);
 int handle_input();
-int run_cmd(char input[]);
+int run_cmd(char one_cmd[]);
 int handle_cd(char **tokenized);
 int handle_pwd(char output[]);
 int handle_a2path(char **tokenized);
@@ -107,16 +107,25 @@ int handle_input() {
     char *space_start = "dragonshell: please do not include space at start of line\n";
     printf("%s", space_start);  
   } else { // if input is not empty
-    run_cmd(input);
+    char *delim = ";";
+    char **tokenized = malloc(sizeof(char *) * 100); //TODO: free it?
+    tokenize(input, delim, tokenized);
+    char *one_cmd;
+    int i = 0;
+    while (tokenized[i] != NULL) { // tokenized is one_cmd, may contain spaces " "
+      one_cmd = tokenized[i];
+      run_cmd(one_cmd); // TODO: remove " "
+      i++;
+    }
   }
   return 0;
 }
 
-int run_cmd(char input[]) {
+int run_cmd(char one_cmd[]) {
   // tokenize the input
   char *delim = " ";
   char temp_input[100];
-  strcpy(temp_input, input);
+  strcpy(temp_input, one_cmd);
   char **tokenized = malloc(sizeof(char *) * 100); //TODO: free it at end of this func?
   tokenize(temp_input, delim, tokenized);
 
@@ -157,7 +166,7 @@ int run_cmd(char input[]) {
       need_redirection = 0;
       run_external_program(tokenized, valid_program_path, need_redirection);
     } else if (symbol_exist(tokenized, "|") == 0) {
-      piping(input, valid_program_path);
+      piping(one_cmd, valid_program_path);
     } else {
       run_external_program(tokenized, valid_program_path, need_redirection);    
     }
