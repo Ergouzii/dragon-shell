@@ -31,11 +31,7 @@ const char *WELCOME = "...........................................\n\
 ..........*WWWWWWWWWWWWWWWWWWWWW-..........\n\n\
 ********Welcome to the Dragonshell*********\n";
 
-char PATH[100] = "/bin/:/usr/bin/"; // TODO: localize PATH var?
-
-// TODO: delete these before submitting
-const char *OK = "**OK**";
-const char *BAD = "**BAD**";
+char PATH[100] = "/bin/:/usr/bin/";
 
 void tokenize(char *str, const char *delim, char **argv);
 int handle_input();
