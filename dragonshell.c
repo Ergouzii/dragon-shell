@@ -390,7 +390,6 @@ int set_exec_arg(char **tokenized, char program_path[], char *exec_arg[]) {
   exec_arg[0] = program_path;
   int i = 1;
   while (tokenized[i] != NULL) { // put arguments into exec_arg
-    printf("%s\n", tokenized[i]);
     exec_arg[i] = tokenized[i];
     i++;
   }
