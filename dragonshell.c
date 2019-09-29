@@ -112,9 +112,9 @@ int handle_input() {
     tokenize(input, delim, tokenized);
     char *one_cmd;
     int i = 0;
-    while (tokenized[i] != NULL) { // tokenized is one_cmd, may contain spaces " "
+    while (tokenized[i] != NULL) { // tokenized[i] is one_cmd
       one_cmd = tokenized[i];
-      run_cmd(one_cmd); // TODO: remove " "
+      run_cmd(one_cmd);
       i++;
     }
   }
