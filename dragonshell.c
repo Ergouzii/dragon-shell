@@ -362,6 +362,7 @@ int piping(char input[], char valid_program_path[]) {
 
   char *envp[] = {NULL}; // can be used for both program one & two
 
+  // building a pipe, redirecting parent program's output to child program
   int fd[2];
   pid_t pid;
   if (pipe(fd) < 0) perror("dragonshell: pipe error");
@@ -369,20 +370,19 @@ int piping(char input[], char valid_program_path[]) {
   if (pid == 0) {
     close(fd[1]); // child wont write
     dup2(fd[0], STDIN_FILENO); // child read from stdin
-    close(fd[0]); // stdout still open
-    if (execve(exec_arg_two[0], exec_arg_two, envp) == -1) { // running external program
+    close(fd[0]); // stdin still open
+    if (execve(exec_arg_two[0], exec_arg_two, envp) == -1) { // running child program
       perror("dragonshell: execve error");
     }
   } else {
     close(fd[0]); // parent wont read
     dup2(fd[1], STDOUT_FILENO); // parent write to stdout
-    close(fd[1]);
-    if (execve(exec_arg_one[0], exec_arg_one, envp) == -1) { // running external program
+    close(fd[1]); // stdout still open
+    if (execve(exec_arg_one[0], exec_arg_one, envp) == -1) { // running parent program
       perror("dragonshell: execve error");
     }
     wait(NULL);
   }
-  
   return 0;
 }
 
