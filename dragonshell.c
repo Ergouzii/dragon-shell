@@ -47,6 +47,8 @@ int accessible_from_path(char *program, char valid_program_path[]);
 int run_external_program(char **tokenied, char *valid_program_path, int need_redirection);
 int symbol_exist(char **tokenized, char *symbol);
 void handle_redirection(char *dest, char output[]);
+int piping(char input[], char valid_program_path[]);
+int set_exec_arg(char **tokenized, char program_path[], char *exec_arg[]);
 
 int main(int argc, char **argv) {
   // print the string prompt without a newline, before beginning to read
@@ -108,8 +110,10 @@ int handle_input() {
   } else { // if input is not empty
     // tokenize the input
     char *delim = " ";
+    char temp_input[100];
+    strcpy(temp_input, input);
     char **tokenized = malloc(sizeof(char *) * 100); //TODO: free it at end of this func?
-    tokenize(input, delim, tokenized);
+    tokenize(temp_input, delim, tokenized);
 
     // check which cmd is entered and handle them
     char *cd_cmd = "cd";
@@ -142,12 +146,16 @@ int handle_input() {
     } else if (strcmp(input_cmd, a2path_cmd) == 0) { // if a2path cmd
       handle_a2path(tokenized);
     } else if ((access(input_cmd, F_OK & X_OK) != -1) \
-        || (accessible_from_path(input_cmd, valid_program_path) != -1)) { // if input a valid program
+        || (accessible_from_path(input_cmd, valid_program_path) != -1)) { // if input is a valid program
       int need_redirection = 1;
       if (symbol_exist(tokenized, ">") == 0) {
         need_redirection = 0;
+        run_external_program(tokenized, valid_program_path, need_redirection);
+      } else if (symbol_exist(tokenized, "|") == 0) {
+        piping(input, valid_program_path);
+      } else {
+        run_external_program(tokenized, valid_program_path, need_redirection);    
       }
-      run_external_program(tokenized, valid_program_path, need_redirection);     
     } else {
       char *unknown = "dragonshell: Command not found\n";
       printf("%s", unknown);
@@ -319,4 +327,76 @@ void handle_redirection(char *dest, char output[]) {
     }
     write(fd, output, strlen(output)); // redirecting output to fd
     close(fd);
+}
+
+int piping(char input[], char valid_program_path[]) {
+  char *delim = "|";
+  char **tokenized = malloc(sizeof(char *) * 100);
+  char *program_one, *program_two;
+  char *path_for_one;
+  char path_for_two[100];
+  tokenize(input, delim, tokenized);
+  program_one = tokenized[0]; // parent
+  program_two = tokenized[1]; // child
+
+  // remove ' ' in last position  
+  size_t len = strlen(program_one) - 1;
+  if (program_one[len] == ' ') {
+    program_one[len] = '\0';
+  }
+  // remove ' ' from first position
+  if (program_two[0] == ' ') {
+    program_two++;
+  }
+
+  char **tokenized_one = malloc(sizeof(char *) * 100);
+  char **tokenized_two = malloc(sizeof(char *) * 100);
+  delim = " ";
+  tokenize(program_one, delim, tokenized_one);
+  tokenize(program_two, delim, tokenized_two);
+
+  path_for_one = valid_program_path;
+  accessible_from_path(tokenized_two[0], path_for_two); // get program two's path
+  
+  char *exec_arg_one[10] = {};
+  char *exec_arg_two[10] = {};
+  set_exec_arg(tokenized_one, path_for_one, exec_arg_one);
+  set_exec_arg(tokenized_two, path_for_two, exec_arg_two);
+
+  char *envp[] = {NULL}; // can be used for both program one & two
+
+  int fd[2];
+  pid_t pid;
+  if (pipe(fd) < 0) perror("dragonshell: pipe error");
+  if ((pid = fork()) < 0) perror("dragonshell: fork error");
+  if (pid == 0) {
+    close(fd[1]); // child wont write
+    dup2(fd[0], STDIN_FILENO); // child read from stdin
+    close(fd[0]); // stdout still open
+    if (execve(exec_arg_two[0], exec_arg_two, envp) == -1) { // running external program
+      perror("dragonshell: execve error");
+    }
+  } else {
+    close(fd[0]); // parent wont read
+    dup2(fd[1], STDOUT_FILENO); // parent write to stdout
+    close(fd[1]);
+    if (execve(exec_arg_one[0], exec_arg_one, envp) == -1) { // running external program
+      perror("dragonshell: execve error");
+    }
+    wait(NULL);
+  }
+  
+  return 0;
+}
+
+int set_exec_arg(char **tokenized, char program_path[], char *exec_arg[]) {
+  exec_arg[0] = program_path;
+  int i = 1;
+  while (tokenized[i] != NULL) { // put arguments into exec_arg
+    printf("%s\n", tokenized[i]);
+    exec_arg[i] = tokenized[i];
+    i++;
+  }
+  exec_arg[i+1] = NULL;
+  return 0;
 }
