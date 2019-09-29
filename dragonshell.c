@@ -315,7 +315,6 @@ int symbol_exist(char **tokenized, char *symbol) {
   return 1;
 }
       
-// param flag = 1: no extra process, flag = 2: need child process
 void handle_redirection(char *dest, char output[]) {
     int fd;
     if ((fd = open(dest, O_CREAT | O_WRONLY | O_TRUNC, 644)) < 0) { 
