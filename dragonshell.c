@@ -9,28 +9,28 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
-const char *WELCOME = "...........................................\n\
-........=..................................\n\
-.........=#-.......-:*==+..................\n\
-...........=W=-..........+W#-..............\n\
-.............-=WW=:.......:WWW:............\n\
-.................:#WWWW@@WWWWWW@-..........\n\
-...............+#WWWWWWWWWW@--=WW@-........\n\
-....*@#=#WWWWWWWWWWWWWWWWWWWWWW@WW*........\n\
-........:@WWWWWWWWWWWWWWWWWWWWWWWWWW@*-....\n\
-......-@WWWWWWWWWWWWWWWWWW*@WWWWWWWWWWW=#+.\n\
-..-=WWWWWWWWWWWWWW@+.:WW=:W+.*:.#@:#W#@WWW@\n\
--#-.+WWWWWWWWWWWW+....:WW*.:@:...+..-*.+#*W\n\
--...@WWWWWWWWWWW*......*WW@+.:@-..........+\n\
-...-WWWWWWWWWWWW:.......+WW=...-=#:........\n\
-..:WWWWWWWWWWWWW@.........:@W*--...-:*=::..\n\
-.:#.=WWWWWWWWWWWWW:..........-++:..........\n\
-.+..-WWWWWWWWWWWWWWW@+.....................\n\
-.....#WWWWWWWWWWWWWWWWWW#:.................\n\
-....#=-@WWWWWWWWWWWWWWWWWWW@:..............\n\
-...-*...#WWWWWWWWWWWWWWWWWWWWW:............\n\
-...--....*WWWWWWWWWWWWWWWWWWWWW*...........\n\
-..........*WWWWWWWWWWWWWWWWWWWWW-..........\n\n\
+const char *WELCOME = "\n\
+        =\n\
+         =#-       -:*==+\n\
+           =W=-          +W#-\n\
+             -=WW=:       :WWW:\n\
+                :#WWWW@@WWWWWW@-\n\
+               +#WWWWWWWWWW@--=WW@-\n\
+    *@#=#WWWWWWWWWWWWWWWWWWWWWW@WW*\n\
+        :@WWWWWWWWWWWWWWWWWWWWWWWWWW@*-\n\
+      -@WWWWWWWWWWWWWWWWWW*@WWWWWWWWWWW=#+.\n\
+  -=WWWWWWWWWWWWWW@+.:WW=:W+ *  #@:#W#@WWW@\n\
+-#- +WWWWWWWWWWWW+    :WW* :@:      -* +#*W\n\
+-   @WWWWWWWWWWW*      *WW@+ :@-\n\
+   -WWWWWWWWWWWW:       +WW=   -=#:\n\
+  :WWWWWWWWWWWWW@        :@W*--   -:*=::\n\
+ :#.=WWWWWWWWWWWWW:          -++:\n\
+    -WWWWWWWWWWWWWWW@+\n\
+     #WWWWWWWWWWWWWWWWWW#:\n\
+    #=-@WWWWWWWWWWWWWWWWWWW@:\n\
+        #WWWWWWWWWWWWWWWWWWWWW:\n\
+         *WWWWWWWWWWWWWWWWWWWWW*.\n\
+          *WWWWWWWWWWWWWWWWWWWWW-\n\n\
 ********Welcome to the Dragonshell*********\n";
 
 char PATH[100] = "/bin/:/usr/bin/";
