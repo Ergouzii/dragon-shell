@@ -402,7 +402,7 @@ int piping(char input[], char valid_program_path[]) {
   }
   
   close(fd[0]);
-	close(fd[1]);
+  close(fd[1]);
   // parent
   waitpid(pid1, NULL, 0);
   waitpid(pid2, NULL, 0);
