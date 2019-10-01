@@ -96,8 +96,8 @@ int handle_input() {
     // catching ctrl + D, exit shell as caught
     char *exiting = "\ndragonshell: Exiting\n";
     printf("%s\n", exiting);
-    kill(0, SIGKILL); // kill all processes
-    _exit(1);
+    //kill(0, SIGKILL); // kill all processes
+    _exit(0);
   }; 
 
   // remove newline at the end of "fgets"
@@ -250,8 +250,8 @@ int handle_a2path(char **tokenized) {
 int handle_exit(char **tokenized) {
   char *exiting = "dragonshell: Exiting\n";
   printf("%s\n", exiting);
-  kill(0, SIGKILL); // kill all processes
-  _exit(1);
+  //kill(0, SIGKILL); // kill all processes
+  _exit(0);
   return 0;
 }
 
