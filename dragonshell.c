@@ -48,6 +48,8 @@ int symbol_exist(char **tokenized, char *symbol);
 void handle_redirection(char *dest, char output[]);
 int piping(char input[], char valid_program_path[]);
 int set_exec_arg(char **tokenized, char program_path[], char *exec_arg[]);
+void sigint_handler();
+void sigtstp_handler();
 
 int main(int argc, char **argv) {
   // print the string prompt without a newline, before beginning to read
@@ -55,6 +57,11 @@ int main(int argc, char **argv) {
   // do this in a loop
 
   printf("%s", WELCOME); // prints welcome text
+
+  if (signal(SIGINT, sigint_handler) == SIG_ERR)
+    printf("dragonshell: can't catch SIGINT\n");
+  if (signal(SIGTSTP, sigtstp_handler) == SIG_ERR)
+    printf("dragonshell: can't catch SIGTSTP\n");
 
   while (1) {
     handle_input();
@@ -333,7 +340,7 @@ int symbol_exist(char **tokenized, char *symbol) {
       
 void handle_redirection(char *dest, char output[]) {
     int fd;
-    if ((fd = open(dest, O_CREAT | O_WRONLY | O_TRUNC, 644)) < 0) { 
+    if ((fd = open(dest, O_CREAT | O_WRONLY | O_TRUNC, 0644)) < 0) { 
       perror("dragonshell: open failed");
     }
     write(fd, output, strlen(output)); // redirecting output to fd
@@ -418,4 +425,12 @@ int set_exec_arg(char **tokenized, char program_path[], char *exec_arg[]) {
   }
   exec_arg[i+1] = NULL;
   return 0;
+}
+
+void sigint_handler() {
+  printf("\ndragonshell: received SIGINT\n");
+}
+
+void sigtstp_handler() {
+  printf("\ndragonshell: received SIGTSTP\n");
 }
