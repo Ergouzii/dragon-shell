@@ -438,7 +438,6 @@ int set_exec_arg(char **tokenized, char program_path[], char *exec_arg[]) {
 
 void sigint_handler() {
   for (int i = 0; i < pid_lst_len; i++) {
-    printf("\npid closing: %d\n", pid_lst[i]); // TODO: delete this line
     kill(pid_lst[i], SIGINT);
   }
 
@@ -451,5 +450,14 @@ void sigint_handler() {
 }
 
 void sigtstp_handler() {
-  printf("\ndragonshell: received SIGTSTP\n");
+  for (int i = 0; i < pid_lst_len; i++) {
+    kill(pid_lst[i], SIGTSTP);
+  }
+
+  // clear pid_lst when all processes in lst are closed
+  memset(pid_lst, 0, sizeof(pid_lst));
+  pid_lst_len = 0;
+
+  printf("\ndragonshell>> ");
+  fflush(stdout);
 }
