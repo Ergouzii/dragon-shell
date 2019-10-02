@@ -50,6 +50,7 @@ int symbol_exist(char **tokenized, char *symbol);
 void handle_redirection(char *dest, char output[]);
 int piping(char input[], char valid_program_path[]);
 int set_exec_arg(char **tokenized, char program_path[], char *exec_arg[]);
+void kill_children();
 void sigint_handler();
 void sigtstp_handler();
 
@@ -96,6 +97,7 @@ int handle_input() {
   char input[100];
   if (fgets(input, sizeof(input), stdin) == NULL) { 
     // catching ctrl + D, exit shell as caught
+    kill_children(); // close all children processes
     char *exiting = "\ndragonshell: Exiting\n";
     printf("%s\n", exiting);
     //kill(0, SIGKILL); // kill all processes
@@ -250,6 +252,7 @@ int handle_a2path(char **tokenized) {
 }
 
 int handle_exit(char **tokenized) {
+  kill_children(); // close all children processes
   char *exiting = "dragonshell: Exiting\n";
   printf("%s\n", exiting);
   //kill(0, SIGKILL); // kill all processes
@@ -436,7 +439,8 @@ int set_exec_arg(char **tokenized, char program_path[], char *exec_arg[]) {
   return 0;
 }
 
-void sigint_handler() {
+// this function kills all children processes
+void kill_children() {
   for (int i = 0; i < pid_lst_len; i++) {
     kill(pid_lst[i], SIGINT);
   }
@@ -444,11 +448,15 @@ void sigint_handler() {
   // clear pid_lst when all processes in lst are closed
   memset(pid_lst, 0, sizeof(pid_lst));
   pid_lst_len = 0;
+}
 
+void sigint_handler() {
+  kill_children();
   printf("\ndragonshell>> ");
   fflush(stdout);
 }
 
+// TODO: now: cannot do anything when a process is suspended
 void sigtstp_handler() {
   for (int i = 0; i < pid_lst_len; i++) {
     kill(pid_lst[i], SIGTSTP);
