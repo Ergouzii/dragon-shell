@@ -34,6 +34,8 @@ const char *WELCOME = "\n\
 ********Welcome to the Dragonshell*********\n";
 
 char PATH[100] = "/bin/:/usr/bin/";
+int pid_lst[100];
+int pid_lst_len = 0;
 
 void tokenize(char *str, const char *delim, char **argv);
 int handle_input();
@@ -321,8 +323,11 @@ int run_external_program(char **tokenized, char *valid_program_path, int need_re
     if (execve(exec_arg[0], exec_arg, envp) == -1) { // running external program
       perror("dragonshell: execve error");
     }
+  } else { // parent
+    pid_lst[pid_lst_len] = pid;
+    pid_lst_len++;
+    wait(NULL); // wait for child process done
   }
-  wait(NULL); // wait for child process done
   return 0;
 }
 
@@ -407,10 +412,14 @@ int piping(char input[], char valid_program_path[]) {
       perror("dragonshell: execve error");
     }
   }
-  
+
+  // parent now
+  pid_lst[pid_lst_len] = pid1;
+  pid_lst_len++;
+  pid_lst[pid_lst_len] = pid2;
+  pid_lst_len++;
   close(fd[0]);
   close(fd[1]);
-  // parent
   waitpid(pid1, NULL, 0);
   waitpid(pid2, NULL, 0);
   return 0;
@@ -428,7 +437,17 @@ int set_exec_arg(char **tokenized, char program_path[], char *exec_arg[]) {
 }
 
 void sigint_handler() {
-  printf("\ndragonshell: received SIGINT\n");
+  for (int i = 0; i < pid_lst_len; i++) {
+    printf("\npid closing: %d\n", pid_lst[i]); // TODO: delete this line
+    kill(pid_lst[i], SIGINT);
+  }
+
+  // clear pid_lst when all processes in lst are closed
+  memset(pid_lst, 0, sizeof(pid_lst));
+  pid_lst_len = 0;
+
+  printf("\ndragonshell>> ");
+  fflush(stdout);
 }
 
 void sigtstp_handler() {
