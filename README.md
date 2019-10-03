@@ -2,29 +2,77 @@
 
 The main program is started with a `while(1)` loop. Inside the loop, there are some simple error handlings. The input is detected by using `tokenized`, then go to each different functions according to user's input command.
 
-## System calls used in each feature implementation
+## System calls and example test cases for each feature implementation
 
 `cd`: `chdir`
 
+```cd ..
+cd DragonShell
+cd non_existing_dir
+cd a b c
+cd ../..```
+
 `pwd`: `getcwd`
+
+```cd ..
+pwd
+```
 
 `$PATH`: none
 
+```$PATH```
+
 `a2path`: none
+
+```a2path $PATH:/a/
+a2path /a/
+$PATH >> /a/
+```
 
 `exit`: `kill`, `_exit`
 
+```exit```
+
 run external program: `execve`, `fork`, `waitpid`, `dup2`, `close`, `open`
+
+```ls
+ls dragonshell.c
+touch test.txt
+touch
+/usr/bin/touch test.txt```
 
 output redirection: `close`, `write`, `open`
 
+```ls > a.txt
+ls -l > a.txt
+pwd > a.txt
+aaa > a.txt```
+
 piping: `pipe`, `execve`, `fork`, `waitpid`, `dup2`, `waitpid`, `close`
 
+```find ./ | sort
+ls -l | sort
+ls | sort```
+
 run multiple cmds: none
+```ls ; ls -l ; ls -l | sort
+ls > a.txt ; find ./ | sort
+sleep & ; ls```
 
 signals: `kill`, `signal`
 
+```sleep
+^C
+
+sleep
+^Z
+
+ps```
+
 putting jobs in background: `waitpid`, `open`, `dup2`, `close`
+
+```sleep &
+ps```
 
 ## References
 
