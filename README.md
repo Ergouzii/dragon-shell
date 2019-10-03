@@ -6,73 +6,93 @@ The main program is started with a `while(1)` loop. Inside the loop, there are s
 
 `cd`: `chdir`
 
-```cd ..
+```
+cd ..
 cd DragonShell
 cd non_existing_dir
 cd a b c
-cd ../..```
+cd ../..
+```
 
 `pwd`: `getcwd`
 
-```cd ..
+```
+cd ..
 pwd
 ```
 
 `$PATH`: none
 
-```$PATH```
+```
+$PATH
+```
 
 `a2path`: none
 
-```a2path $PATH:/a/
+```
+a2path $PATH:/a/
 a2path /a/
 $PATH >> /a/
 ```
 
 `exit`: `kill`, `_exit`
 
-```exit```
+```
+exit
+```
 
 run external program: `execve`, `fork`, `waitpid`, `dup2`, `close`, `open`
 
-```ls
+```
+ls
 ls dragonshell.c
 touch test.txt
 touch
-/usr/bin/touch test.txt```
+/usr/bin/touch test.txt
+```
 
 output redirection: `close`, `write`, `open`
 
-```ls > a.txt
+```
+ls > a.txt
 ls -l > a.txt
 pwd > a.txt
-aaa > a.txt```
+aaa > a.txt
+```
 
 piping: `pipe`, `execve`, `fork`, `waitpid`, `dup2`, `waitpid`, `close`
 
-```find ./ | sort
+```
+find ./ | sort
 ls -l | sort
-ls | sort```
+ls | sort
+```
 
 run multiple cmds: none
-```ls ; ls -l ; ls -l | sort
+```
+ls ; ls -l ; ls -l | sort
 ls > a.txt ; find ./ | sort
-sleep & ; ls```
+sleep & ; ls
+```
 
 signals: `kill`, `signal`
 
-```sleep
+```
+sleep
 ^C
 
 sleep
 ^Z
 
-ps```
+ps
+```
 
 putting jobs in background: `waitpid`, `open`, `dup2`, `close`
 
-```sleep &
-ps```
+```
+sleep &
+ps
+```
 
 ## References
 
