@@ -9,6 +9,8 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
+#define MAX_SIZE 1024
+
 const char *WELCOME = "\n\
         =\n\
          =#-       -:*==+\n\
@@ -33,8 +35,8 @@ const char *WELCOME = "\n\
           *WWWWWWWWWWWWWWWWWWWWW-\n\n\
 ********Welcome to the Dragonshell*********\n";
 
-char PATH[100] = "/bin/:/usr/bin/";
-int pid_lst[100];
+char PATH[MAX_SIZE] = "/bin/:/usr/bin/";
+int pid_lst[MAX_SIZE];
 int pid_lst_len = 0;
 
 void tokenize(char *str, const char *delim, char **argv);
@@ -94,13 +96,12 @@ int handle_input() {
   printf("\ndragonshell > ");
 
   // get input
-  char input[100];
+  char input[MAX_SIZE];
   if (fgets(input, sizeof(input), stdin) == NULL) { 
     // catching ctrl + D, exit shell as caught
     kill_children(); // close all children processes
     char *exiting = "\ndragonshell: Exiting\n";
     printf("%s\n", exiting);
-    //kill(0, SIGKILL); // kill all processes
     _exit(0);
   }; 
 
@@ -119,7 +120,7 @@ int handle_input() {
     printf("%s", space_start);  
   } else { // if input is not empty
     char *delim = ";";
-    char **tokenized = malloc(sizeof(char *) * 100); //TODO: free it?
+    char *tokenized[MAX_SIZE];
     tokenize(input, delim, tokenized);
     char *one_cmd;
     int i = 0;
@@ -135,9 +136,10 @@ int handle_input() {
 int run_cmd(char one_cmd[]) {
   // tokenize the input
   char *delim = " ";
-  char *temp_input = malloc(sizeof(char) * 100);
+  char temp_input[MAX_SIZE];
   strcpy(temp_input, one_cmd);
-  char **tokenized = malloc(sizeof(char *) * 100); //TODO: free it at end of this func?
+  char **tokenized = malloc(sizeof(char *) * 100);
+  // char *tokenized[MAX_SIZE];
   tokenize(temp_input, delim, tokenized);
 
   // check which cmd is entered and handle them
@@ -147,13 +149,13 @@ int run_cmd(char one_cmd[]) {
   char *a2path_cmd = "a2path";
   char *exit_cmd = "exit";
   char *input_cmd = tokenized[0];
-  char valid_program_path[100];
+  char valid_program_path[MAX_SIZE];
   strcpy(valid_program_path, input_cmd); // initialize path with input_cmd in case program is at cur dir
 
   if (strcmp(input_cmd, cd_cmd) == 0) { // if cd cmd
     handle_cd(tokenized);
   } else if (strcmp(input_cmd, pwd_cmd) == 0) { // if pwd cmd
-    char output[100];
+    char output[MAX_SIZE];
     handle_pwd(output);
     if (symbol_exist(tokenized, ">") == 0) { // if redirection required
       handle_redirection(tokenized[2], output);
@@ -198,7 +200,6 @@ int run_cmd(char one_cmd[]) {
     printf("dragonshell: Command not found\n");
   }
 //   free(tokenized);
-//   free(temp_input);
   return 0;
 }
 
@@ -285,7 +286,7 @@ int handle_exit(char **tokenized) {
 int accessible_from_path(char *program, char valid_program_path[]) {
   char *delim = ":";
   char *tokenized_path[100];
-  char temp_path[100];
+  char temp_path[MAX_SIZE];
   strcpy(temp_path, PATH);
   tokenize(temp_path, delim, tokenized_path);
   int i = 0;
@@ -386,7 +387,7 @@ int piping(char input[], char valid_program_path[]) {
   char **tokenized = malloc(sizeof(char *) * 100);
   char *program_one, *program_two;
   char *path_for_one;
-  char path_for_two[100];
+  char path_for_two[MAX_SIZE];
   tokenize(input, delim, tokenized);
   program_one = tokenized[0]; // parent
   program_two = tokenized[1]; // child
@@ -483,7 +484,6 @@ void sigint_handler() {
   fflush(stdout);
 }
 
-// TODO: now: cannot do anything when a process is suspended
 void sigtstp_handler() {
   for (int i = 0; i < pid_lst_len; i++) {
     kill(pid_lst[i], SIGTSTP);
