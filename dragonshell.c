@@ -353,6 +353,7 @@ int run_external_program(char **tokenized, char *valid_program_path, int need_re
     if (run_bg == 1) {
       waitpid(pid, NULL, 0); // wait for child process done
     } else { // running in backrground
+      signal(SIGCHLD, SIG_IGN);  // ignore what child is doing
       printf("PID %d is running in the background\n", pid);
     }
   }
