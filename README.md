@@ -44,3 +44,5 @@ run at background: https://stackoverflow.com/questions/14548367/using-waitpid-to
 I/O syscalls: https://www.geeksforgeeks.org/input-output-system-calls-c-create-open-close-read-write/
 
 free: https://www.tutorialspoint.com/c_standard_library/c_function_free.htm
+
+prevent zombie process: https://www.geeksforgeeks.org/zombie-processes-prevention/
