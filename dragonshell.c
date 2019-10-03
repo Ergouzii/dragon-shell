@@ -91,7 +91,7 @@ void tokenize(char *str, const char *delim, char **argv) {
 }
 
 int handle_input() {
-  printf("\ndragonshell>> ");
+  printf("\ndragonshell > ");
 
   // get input
   char input[100];
@@ -478,7 +478,7 @@ void kill_children() {
 
 void sigint_handler() {
   kill_children();
-  printf("\ndragonshell>> ");
+  printf("\ndragonshell > ");
   fflush(stdout);
 }
 
@@ -492,6 +492,6 @@ void sigtstp_handler() {
   memset(pid_lst, 0, sizeof(pid_lst));
   pid_lst_len = 0;
 
-  printf("\ndragonshell>> ");
+  printf("\ndragonshell > ");
   fflush(stdout);
 }
