@@ -45,7 +45,7 @@ int handle_pwd(char output[]);
 int handle_a2path(char **tokenized);
 int handle_exit(char **tokenized);
 int accessible_from_path(char *program, char valid_program_path[]);
-int run_external_program(char **tokenied, char *valid_program_path, int need_redirection);
+int run_external_program(char **tokenied, char *valid_program_path, int need_redirection, int run_bg);
 int symbol_exist(char **tokenized, char *symbol);
 void handle_redirection(char *dest, char output[]);
 int piping(char input[], char valid_program_path[]);
@@ -172,14 +172,27 @@ int run_cmd(char one_cmd[]) {
     handle_a2path(tokenized);
   } else if ((access(input_cmd, F_OK & X_OK) != -1) \
       || (accessible_from_path(input_cmd, valid_program_path) != -1)) { // if input is a valid program
+    
+    int run_bg = 1;
     int need_redirection = 1;
+
     if (symbol_exist(tokenized, ">") == 0) {
       need_redirection = 0;
-      run_external_program(tokenized, valid_program_path, need_redirection);
+      run_external_program(tokenized, valid_program_path, need_redirection, run_bg);
+    } else if (symbol_exist(tokenized, "&") == 0) {
+      run_bg = 0;
+      // remove & from cmds
+      char **temp = malloc(sizeof(char *) * 100);
+      int i = 0;
+      while ((tokenized[i] != NULL) && (strcmp(tokenized[i], "&") != 0)) {
+        temp[i] = tokenized[i];
+        i++;
+      }
+      run_external_program(temp, valid_program_path, need_redirection, run_bg);
     } else if (symbol_exist(tokenized, "|") == 0) {
       piping(one_cmd, valid_program_path);
     } else {
-      run_external_program(tokenized, valid_program_path, need_redirection);    
+      run_external_program(tokenized, valid_program_path, need_redirection, run_bg);    
     }
   } else {
     char *unknown = "dragonshell: Command not found\n";
@@ -287,7 +300,7 @@ int accessible_from_path(char *program, char valid_program_path[]) {
     return -1;
 }
 
-int run_external_program(char **tokenized, char *valid_program_path, int need_redirection) {
+int run_external_program(char **tokenized, char *valid_program_path, int need_redirection, int run_bg) {
   // error handling
   if ((tokenized[1] != NULL) && (strcmp(tokenized[1], ">") == 0) && (tokenized[2] == NULL)) {
     perror("dragonshell: please give one destination file");
@@ -323,13 +336,25 @@ int run_external_program(char **tokenized, char *valid_program_path, int need_re
       dup2(fd, STDOUT_FILENO); // redirecting output to fd
       close(fd);
     }
+    if (run_bg == 0) { // hide output of program if running on bg
+      int fd;
+      if ((fd = open("/dev/null", O_WRONLY)) < 0) {
+        perror("dragonshell: open failed");
+      }
+      dup2(fd, STDOUT_FILENO);
+      close(fd);
+    }
     if (execve(exec_arg[0], exec_arg, envp) == -1) { // running external program
       perror("dragonshell: execve error");
     }
   } else { // parent
     pid_lst[pid_lst_len] = pid;
     pid_lst_len++;
-    wait(NULL); // wait for child process done
+    if (run_bg == 1) {
+      waitpid(pid, NULL, 0); // wait for child process done
+    } else { // running in backrground
+      printf("PID %d is running in the background\n", pid);
+    }
   }
   return 0;
 }
