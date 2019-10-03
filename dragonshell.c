@@ -135,7 +135,7 @@ int handle_input() {
 int run_cmd(char one_cmd[]) {
   // tokenize the input
   char *delim = " ";
-  char temp_input[100];
+  char *temp_input = malloc(sizeof(char) * 100);
   strcpy(temp_input, one_cmd);
   char **tokenized = malloc(sizeof(char *) * 100); //TODO: free it at end of this func?
   tokenize(temp_input, delim, tokenized);
@@ -195,10 +195,10 @@ int run_cmd(char one_cmd[]) {
       run_external_program(tokenized, valid_program_path, need_redirection, run_bg);    
     }
   } else {
-    char *unknown = "dragonshell: Command not found\n";
-    printf("%s", unknown);
+    printf("dragonshell: Command not found\n");
   }
-  //free(tokenized);
+//   free(tokenized);
+//   free(temp_input);
   return 0;
 }
 
@@ -283,21 +283,21 @@ int handle_exit(char **tokenized) {
  *         -1 otherwise
  */
 int accessible_from_path(char *program, char valid_program_path[]) {
-    char *delim = ":";
-    char *tokenized_path[100];
-    char temp_path[100];
-    strcpy(temp_path, PATH);
-    tokenize(temp_path, delim, tokenized_path);
-    int i = 0;
-    while (tokenized_path[i] != NULL) {
-        strcpy(valid_program_path, tokenized_path[i]);
-        strcat(valid_program_path, program); // add one path in PATH in front of our "run", like: /bin/ls
-        if (access(valid_program_path, F_OK & X_OK) != -1) {
-            return 0;
-        }
-        i ++;
+  char *delim = ":";
+  char *tokenized_path[100];
+  char temp_path[100];
+  strcpy(temp_path, PATH);
+  tokenize(temp_path, delim, tokenized_path);
+  int i = 0;
+  while (tokenized_path[i] != NULL) {
+    strcpy(valid_program_path, tokenized_path[i]);
+    strcat(valid_program_path, program); // add one path in PATH in front of our "run", like: /bin/ls
+    if (access(valid_program_path, F_OK & X_OK) != -1) {
+        return 0;
     }
-    return -1;
+    i++;
+  }
+  return -1;
 }
 
 int run_external_program(char **tokenized, char *valid_program_path, int need_redirection, int run_bg) {
@@ -351,7 +351,7 @@ int run_external_program(char **tokenized, char *valid_program_path, int need_re
     pid_lst[pid_lst_len] = pid;
     pid_lst_len++;
     if (run_bg == 1) {
-      waitpid(pid, NULL, 0); // wait for child process done
+      waitpid(pid, NULL, WUNTRACED); // wait for child process done
     } else { // running in backrground
       signal(SIGCHLD, SIG_IGN);  // ignore what child is doing
       printf("PID %d is running in the background\n", pid);
@@ -469,6 +469,7 @@ int set_exec_arg(char **tokenized, char program_path[], char *exec_arg[]) {
 void kill_children() {
   for (int i = 0; i < pid_lst_len; i++) {
     kill(pid_lst[i], SIGINT);
+    waitpid(pid_lst[i], NULL, WNOHANG);
   }
 
   // clear pid_lst when all processes in lst are closed
@@ -487,10 +488,6 @@ void sigtstp_handler() {
   for (int i = 0; i < pid_lst_len; i++) {
     kill(pid_lst[i], SIGTSTP);
   }
-
-  // clear pid_lst when all processes in lst are closed
-  memset(pid_lst, 0, sizeof(pid_lst));
-  pid_lst_len = 0;
 
   printf("\ndragonshell > ");
   fflush(stdout);
