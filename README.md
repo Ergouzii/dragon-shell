@@ -1,3 +1,13 @@
+## How to use?
+
+```
+>> make
+>> ./dragonshell
+
+    the program will show here!
+    
+```
+
 ## Design choices
 
 The main program is started with a `while(1)` loop. Inside the loop, there are some simple error handlings. The input is detected by using `tokenized`, then go to each different functions according to user's input command.
