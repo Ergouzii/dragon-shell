@@ -39,19 +39,19 @@ char PATH[MAX_SIZE] = "/bin/:/usr/bin/";
 int pid_lst[MAX_SIZE];
 int pid_lst_len = 0;
 
-void tokenize(char *str, const char *delim, char **argv);
+void tokenize(char *str, const char *delim, char *argv[]);
 int handle_input();
 int run_cmd(char one_cmd[]);
-int handle_cd(char **tokenized);
+int handle_cd(char *tokenized[]);
 int handle_pwd(char output[]);
-int handle_a2path(char **tokenized);
-int handle_exit(char **tokenized);
+int handle_a2path(char *tokenized[]);
+int handle_exit(char *tokenized[]);
 int accessible_from_path(char *program, char valid_program_path[]);
-int run_external_program(char **tokenied, char *valid_program_path, int need_redirection, int run_bg);
-int symbol_exist(char **tokenized, char *symbol);
+int run_external_program(char *tokenized[], char *valid_program_path, int need_redirection, int run_bg);
+int symbol_exist(char *tokenized[], char *symbol);
 void handle_redirection(char *dest, char output[]);
 int piping(char input[], char valid_program_path[]);
-int set_exec_arg(char **tokenized, char program_path[], char *exec_arg[]);
+int set_exec_arg(char *tokenized[], char program_path[], char *exec_arg[]);
 void kill_children();
 void sigint_handler();
 void sigtstp_handler();
@@ -83,7 +83,7 @@ int main(int argc, char **argv) {
  * @param argv - A char* array that will contain the tokenized strings
  * Make sure that you allocate enough space for the array.
  */
-void tokenize(char *str, const char *delim, char **argv) {
+void tokenize(char *str, const char *delim, char *argv[]) {
   char *token;
   token = strtok(str, delim); // getting first token
   for(size_t i = 0; token != NULL; ++i){ //getting the following tokens
@@ -138,8 +138,8 @@ int run_cmd(char one_cmd[]) {
   char *delim = " ";
   char temp_input[MAX_SIZE];
   strcpy(temp_input, one_cmd);
-  char **tokenized = malloc(sizeof(char *) * 100);
-  // char *tokenized[MAX_SIZE];
+  char *tokenized[MAX_SIZE];
+  memset(tokenized, 0, sizeof(char *) * MAX_SIZE);
   tokenize(temp_input, delim, tokenized);
 
   // check which cmd is entered and handle them
@@ -199,11 +199,10 @@ int run_cmd(char one_cmd[]) {
   } else {
     printf("dragonshell: Command not found\n");
   }
-//   free(tokenized);
   return 0;
 }
 
-int handle_cd(char **tokenized) {
+int handle_cd(char *tokenized[]) {
   char *arg = tokenized[1];
   if (arg == NULL) { // if no argument given
     char *no_argument = "dragonshell: expected argument to \"cd\"\n";
@@ -234,7 +233,7 @@ int handle_pwd(char output[]) {
   return 0;
 }
 
-int handle_a2path(char **tokenized) {
+int handle_a2path(char *tokenized[]) {
   char *arg = tokenized[1];
   if (arg == NULL) { // if no argument given
     char *no_argument = "dragonshell: expected argument to \"a2path\"\n";
@@ -265,7 +264,7 @@ int handle_a2path(char **tokenized) {
   return 0;
 }
 
-int handle_exit(char **tokenized) {
+int handle_exit(char *tokenized[]) {
   kill_children(); // close all children processes
   char *exiting = "dragonshell: Exiting\n";
   printf("%s\n", exiting);
@@ -301,7 +300,7 @@ int accessible_from_path(char *program, char valid_program_path[]) {
   return -1;
 }
 
-int run_external_program(char **tokenized, char *valid_program_path, int need_redirection, int run_bg) {
+int run_external_program(char *tokenized[], char *valid_program_path, int need_redirection, int run_bg) {
   // error handling
   if ((tokenized[1] != NULL) && (strcmp(tokenized[1], ">") == 0) && (tokenized[2] == NULL)) {
     perror("dragonshell: please give one destination file");
@@ -362,7 +361,7 @@ int run_external_program(char **tokenized, char *valid_program_path, int need_re
 }
 
 // return 0 if there is given symbol exist in tokenized, 1 otherwise
-int symbol_exist(char **tokenized, char *symbol) {
+int symbol_exist(char *tokenized[], char *symbol) {
   int i = 0;
   while (tokenized[i] != NULL) {
     if (strcmp(tokenized[i], symbol) == 0) { // if given symbol in tokenized
@@ -455,7 +454,7 @@ int piping(char input[], char valid_program_path[]) {
   return 0;
 }
 
-int set_exec_arg(char **tokenized, char program_path[], char *exec_arg[]) {
+int set_exec_arg(char *tokenized[], char program_path[], char *exec_arg[]) {
   exec_arg[0] = program_path;
   int i = 1;
   while (tokenized[i] != NULL) { // put arguments into exec_arg
