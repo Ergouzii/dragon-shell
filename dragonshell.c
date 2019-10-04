@@ -121,6 +121,7 @@ int handle_input() {
   } else { // if input is not empty
     char *delim = ";";
     char *tokenized[MAX_SIZE];
+    memset(tokenized, 0, sizeof(char *) * MAX_SIZE);
     tokenize(input, delim, tokenized);
     char *one_cmd;
     int i = 0;
@@ -184,7 +185,8 @@ int run_cmd(char one_cmd[]) {
     } else if (symbol_exist(tokenized, "&") == 0) {
       run_bg = 0;
       // remove & from cmds
-      char **temp = malloc(sizeof(char *) * 100);
+      char *temp[MAX_SIZE];
+      memset(temp, 0, sizeof(char *) * MAX_SIZE);
       int i = 0;
       while ((tokenized[i] != NULL) && (strcmp(tokenized[i], "&") != 0)) {
         temp[i] = tokenized[i];
@@ -247,7 +249,8 @@ int handle_a2path(char *tokenized[]) {
     if (strncmp(arg, "$PATH:", 6) != 0) { // if arg does not start with "$PATH:"
       strcpy(PATH, arg); // overwrite PATH
     } else { // if arg gives something to add
-      char **tokenized_arg = malloc(sizeof(char) * 100);
+      char *tokenized_arg[MAX_SIZE];
+      memset(tokenized_arg, 0, sizeof(char *) * MAX_SIZE);
       char *delim = ":";
       tokenize(arg, delim, tokenized_arg); // split the paths by ":"
       if (strcmp(tokenized_arg[0], "$PATH") != 0) { // if not adding path to $PATH
@@ -258,7 +261,6 @@ int handle_a2path(char *tokenized[]) {
         strcat(PATH, ":");
         strcat(PATH, tokenized_arg[1]);
       }
-      free(tokenized_arg);
     }
   }
   return 0;
@@ -383,7 +385,8 @@ void handle_redirection(char *dest, char output[]) {
 
 int piping(char input[], char valid_program_path[]) {
   char *delim = "|";
-  char **tokenized = malloc(sizeof(char *) * 100);
+  char *tokenized[MAX_SIZE];
+  memset(tokenized, 0, sizeof(char *) * MAX_SIZE);
   char *program_one, *program_two;
   char *path_for_one;
   char path_for_two[MAX_SIZE];
@@ -401,8 +404,10 @@ int piping(char input[], char valid_program_path[]) {
     program_two++;
   }
 
-  char **tokenized_one = malloc(sizeof(char *) * 100);
-  char **tokenized_two = malloc(sizeof(char *) * 100);
+  char *tokenized_one[MAX_SIZE];
+  char *tokenized_two[MAX_SIZE];
+  memset(tokenized_one, 0, sizeof(char *) * MAX_SIZE);
+  memset(tokenized_two, 0, sizeof(char *) * MAX_SIZE);
   delim = " ";
   tokenize(program_one, delim, tokenized_one);
   tokenize(program_two, delim, tokenized_two);
